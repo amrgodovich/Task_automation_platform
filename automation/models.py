@@ -47,8 +47,10 @@ class JobExecution(models.Model):
     related_task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     attempt_number = models.PositiveIntegerField(default=1)
+
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+
     error_message = models.TextField(blank=True)
 
     def __str__(self):

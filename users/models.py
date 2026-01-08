@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 class UserProfile(AbstractUser):
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    USERNAME_FIELD = 'email'     
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'     
+    REQUIRED_FIELDS = ['email']
     def __str__(self):
         return self.username
