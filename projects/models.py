@@ -1,5 +1,8 @@
 from django.db import models
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
@@ -42,3 +45,13 @@ class ProjectMember(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.project.name} ({self.role})"
+    
+
+@receiver(post_save, sender=Project)
+def create_owner_membership(sender, instance, created, **kwargs):
+    if created:
+        ProjectMember.objects.create(
+            project=instance,
+            user=instance.owner,
+            role=ProjectMember.Role.ADMIN
+        )
