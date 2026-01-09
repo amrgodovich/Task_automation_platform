@@ -2,7 +2,6 @@ from django.db import models
 from projects.models import Project
 from tasks.models import Task
 
-
 class Trigger(models.Model):
     class SourceType(models.TextChoices):
         Task="TASK", "Task"
