@@ -5,7 +5,6 @@ class IsPMorNormal(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return request.user.is_authenticated
 
-        # 2. Restrict Create (POST) to Superusers OR Project Managers
         if request.method == 'POST':
             return request.user.is_authenticated and (
                 request.user.is_superuser or getattr(request.user, 'is_project_manager', False)
