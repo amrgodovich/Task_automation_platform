@@ -2,6 +2,8 @@ from django.db import models
 from projects.models import Project
 # from django.contrib.auth.models import User
 from django.conf import settings
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 # Create your models here.
 class Task(models.Model):
@@ -31,12 +33,22 @@ class TaskMember(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='members')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     joined_at = models.DateTimeField(auto_now_add=True)
-    
+
+
+@receiver(post_save, sender=Task)
+def create_task_owner_membership(sender, instance, created, **kwargs):
+    if created:
+        TaskMember.objects.create(
+            task=instance,
+            user=instance.project.owner
+        )
 
 class Milestone(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='milestones')
     name = models.CharField(max_length=200)
     is_completed = models.BooleanField(default=False)
+    completed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
 
 class Comments(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
