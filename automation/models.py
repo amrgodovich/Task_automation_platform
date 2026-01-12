@@ -1,68 +1,45 @@
 from django.db import models
-from projects.models import Project
-from tasks.models import Task
-
-class Trigger(models.Model):
-    class SourceType(models.TextChoices):
-        Task="TASK", "Task"
-        TIME="TIME", "Time"
-        SYSTEM="SYSTEM", "System"
-
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="triggers")
-    source_type = models.CharField(max_length=20, choices=SourceType.choices)
-    condition = models.JSONField()
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
+# class RecipientRoles(models.TextChoices):
+#     ADMIN = 'ADMIN', 'System Admin'
+#     MANAGER = 'MANAGER', 'Project Manager'
+#     MEMBER = 'MEMBER', 'Team Member'
+
+# 1. THE PURPOSE (Catalog)
+class NotificationEvent(models.Model):
+    code = models.CharField(max_length=50, unique=True) # e.g. "COMMENT_ADDED"
+    description = models.CharField(max_length=200)
     def __str__(self):
-        return f"Trigger {self.id} ({self.source_type})"
+        return f"{self.description}"
 
-
-class Action(models.Model):
-    class ActionType(models.TextChoices):
-        TYPE_EMAIL = "EMAIL"," Email"
-        TYPE_WEBHOOK = "WEBHOOK", "Webhook"
-        TYPE_NOTIFICATION = "NOTIFICATION","notification"
-
-    trigger = models.ForeignKey(Trigger, on_delete=models.CASCADE, related_name="actions")
-    type = models.CharField(max_length=30, choices=ActionType.choices)
-    config = models.JSONField()
-    is_active = models.BooleanField(default=True)
-
-
-    def __str__(self):
-        return f"Action {self.type} for Trigger {self.trigger_id}"
-
-
-class JobExecution(models.Model):
-    class Status(models.TextChoices):
-        PENDING = "PENDING", "Pending"
-        IN_PROGRESS = "IN_PROGRESS", "In Progress"
-        COMPLETED = "COMPLETED", "Completed"
-        FAILED = "FAILED", "Failed"
-
-    action = models.ForeignKey(Action, on_delete=models.CASCADE, related_name="executions")
-    related_task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    attempt_number = models.PositiveIntegerField(default=1)
-
-    started_at = models.DateTimeField(null=True, blank=True)
-    finished_at = models.DateTimeField(null=True, blank=True)
-
-    error_message = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"JobExecution {self.id} for Action {self.action_id} - Status: {self.status}"
+# 2. THE CONTENT (Templates)
+class MessageTemplate(models.Model):
+    class ChannelTypes(models.TextChoices):
+        EMAIL = 'EMAIL', 'Email'
+        IN_APP = 'NOTIFICATION', 'In-App Notification'
+        ALL = 'ALL', 'Default (All Channels)'
+    event = models.ForeignKey(NotificationEvent, on_delete=models.CASCADE)
+    # If channel is ALL, this text is used for everything. 
+    # If channel is EMAIL, this specific template is used only for emails.
+    channel = models.CharField(max_length=20, choices=ChannelTypes.choices, default=ChannelTypes.ALL)
     
+    subject_template = models.CharField(max_length=200) 
+    body_template = models.TextField() # "User {{ user }} commented: {{ text }}"
 
+    class Meta:
+        unique_together = ('event', 'channel') # One template per channel per event
 
-class EventLog(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="events")
-    event_type = models.CharField(max_length=100)
-    payload = models.JSONField()
-    occurred_at = models.DateTimeField(auto_now_add=True)
-
+# 3. THE DISTRIBUTION (Rules)
+class AutomationRule(models.Model):
+    title = models.CharField(max_length=100, default="")
+    event = models.ForeignKey(NotificationEvent, on_delete=models.CASCADE)
+    
+    # Who gets it?
+    recipients = models.JSONField(default=list) # e.g. ["MANAGER", "MEMBER"]
+    
+    # How do they get it?
+    channels = models.JSONField(default=list) # e.g. ["EMAIL", "IN_APP"]
 
     def __str__(self):
-        return self.event_type
+        return f"{self.title}"
