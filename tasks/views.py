@@ -5,10 +5,11 @@ from django.shortcuts import get_object_or_404
 from .models import Task, TaskMember,Milestone, Comments, Resources
 from projects.models import Project
 from .serializers import TaskSerializer, TaskMemberSerializer,MillstoneSerializer, CommentsSerializer, ResourcesSerializer
+from .permissions import IsPM, IsAuthorOrPM
 
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated,IsPM] 
 
     def get_queryset(self):
         return Task.objects.filter(project_id=self.kwargs.get('project_id'))
@@ -19,35 +20,32 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 class TaskMembersViewSet(viewsets.ModelViewSet):
     serializer_class = TaskMemberSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsPM]
 
     def get_queryset(self):
         return TaskMember.objects.filter(
             task_id=self.kwargs.get('task_id')
         ).select_related('user')
+    def perform_create(self, serializer):
+        task = get_object_or_404(Task, pk=self.kwargs.get('task_id'))
+        serializer.save(task=task)
 
-    # def list(self, request, *args, **kwargs):
-    #     task = get_object_or_404(Task, pk=self.kwargs.get('task_id'))
-        
-    #     if not (request.user.is_superuser or task.project.owner == request.user):
-    #         return Response(
-    #             {"detail": "Not authorized to view members of this task."}, 
-    #             status=status.HTTP_403_FORBIDDEN
-    #         )
-    #     return super().list(request, *args, **kwargs)
 
 class TaskMilestonesViewSet(viewsets.ModelViewSet):
     serializer_class = MillstoneSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsPM]
 
     def get_queryset(self):
         return Milestone.objects.filter(
             task_id=self.kwargs.get('task_id')
         )
+    def perform_create(self, serializer):
+        task = get_object_or_404(Task, pk=self.kwargs.get('task_id'))
+        serializer.save(task=task)
 
 class TaskCommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsPM, IsAuthorOrPM]
 
     def get_queryset(self):
         return Comments.objects.filter(
@@ -59,9 +57,12 @@ class TaskCommentsViewSet(viewsets.ModelViewSet):
 
 class TaskResourcesViewSet(viewsets.ModelViewSet):
     serializer_class = ResourcesSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsPM]
 
     def get_queryset(self):
         return Resources.objects.filter(
             task_id=self.kwargs.get('task_id')
         )
+    def perform_create(self, serializer):
+        task = get_object_or_404(Task, pk=self.kwargs.get('task_id'))
+        serializer.save(task=task)

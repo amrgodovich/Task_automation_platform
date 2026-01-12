@@ -18,13 +18,16 @@ class MillstoneSerializer(serializers.ModelSerializer):
     class Meta:
         model =Milestone
         fields= '__all__'
+        read_only_fields = ['task']
 
 class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model =Comments
         fields= '__all__'
+        read_only_fields = ['user', 'task']
 
 class ResourcesSerializer(serializers.ModelSerializer):
     class Meta:
         model =Resources
         fields= '__all__'
+        read_only_fields = ['task']

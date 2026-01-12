@@ -21,6 +21,7 @@ urlpatterns = [
     path('<int:project_id>/tasks/<int:task_id>/milestones/<int:pk>/', TaskMilestonesViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='task-milestone-detail'),
 
     path('<int:project_id>/tasks/<int:task_id>/comments/', TaskCommentsViewSet.as_view({'get': 'list', 'post': 'create'}), name='task-comments'),
+    path('<int:project_id>/tasks/<int:task_id>/comments/<int:pk>/', TaskCommentsViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='task-comment-detail'),
     
     path('<int:project_id>/tasks/<int:task_id>/resources/', TaskResourcesViewSet.as_view({'get': 'list', 'post': 'create'}), name='task-resources'),
 
