@@ -27,6 +27,11 @@ class Task(models.Model):
     def __str__(self):
         return self.name
     
+class TaskMember(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='members')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    
 
 class Milestone(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='milestones')
