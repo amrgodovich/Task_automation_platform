@@ -13,7 +13,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class UserSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_project_manager','profile_picture']
 
 class ProjectMemberSerializer(serializers.ModelSerializer):
     user = UserSummarySerializer(read_only=True)
