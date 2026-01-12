@@ -1,6 +1,16 @@
-from .views import *
-from django.urls import path,include
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    NotificationEventViewSet, 
+    MessageTemplateViewSet, 
+    AutomationRuleViewSet
+)
+
+router = DefaultRouter()
+router.register(r'events', NotificationEventViewSet, basename='notification-event')
+router.register(r'templates', MessageTemplateViewSet, basename='message-template')
+router.register(r'rules', AutomationRuleViewSet, basename='automation-rule')
 
 urlpatterns = [
-    # path('', project_list, name='project_list'),
+    path('', include(router.urls)),
 ]
